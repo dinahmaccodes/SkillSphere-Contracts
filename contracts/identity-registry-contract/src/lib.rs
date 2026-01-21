@@ -29,7 +29,7 @@ impl IdentityRegistryContract {
             return Err(RegistryError::ExpertVecMax);
         }
 
-        let admin = storage::get_admin(&env).unwrap();
+        let admin = storage::get_admin(&env).ok_or(RegistryError::NotInitialized)?;
         admin.require_auth();
 
         for expert in experts {

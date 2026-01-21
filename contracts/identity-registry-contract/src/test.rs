@@ -41,7 +41,6 @@ fn test_batch_verification() {
 #[should_panic]
 fn test_batch_verification_no_admin() {
     let env = Env::default();
-    env.mock_all_auths();
 
     let contract_id = env.register_contract(None, IdentityRegistryContract);
     let client = IdentityRegistryContractClient::new(&env, &contract_id);
