@@ -1,8 +1,8 @@
-use crate::error::RegistryError;
-use crate::events;
-use crate::storage;
 use crate::types::ExpertStatus;
-use soroban_sdk::{Address, Env};
+use soroban_sdk::{Address, Env, Vec};
+use crate::storage;
+use crate::events;
+use crate::{error::RegistryError, types::ExpertStatus};
 
 /// Initialize the registry with an admin address
 pub fn initialize_registry(env: &Env, admin: &Address) -> Result<(), RegistryError> {
@@ -16,6 +16,27 @@ pub fn initialize_registry(env: &Env, admin: &Address) -> Result<(), RegistryErr
 }
 
 /// Verify an expert by setting their status to Verified (Admin only)
+/// Batch Verification
+pub fn batch_add_experts(env:Env, experts: Vec<Address>) -> Result<(), RegistryError> {
+    if experts.len() > 20 {
+        return Err(RegistryError::ExpertVecMax);
+    }
+
+    let admin = storage::get_admin(&env).ok_or(RegistryError::NotInitialized)?;
+    admin.require_auth();
+
+    for expert in experts {
+        let status = storage::get_expert_status(&env, &expert);
+        if status == ExpertStatus::Verified {
+            return Err(RegistryError::AlreadyVerified);
+        }
+        storage::set_expert_record(&env, &expert, ExpertStatus::Verified);
+        events::emit_status_change(&env, expert, status, ExpertStatus::Verified, admin.clone());
+    }
+
+    Ok(())
+}
+    
 pub fn verify_expert(env: &Env, expert: &Address) -> Result<(), RegistryError> {
     let admin = storage::get_admin(env).ok_or(RegistryError::NotInitialized)?;
 
