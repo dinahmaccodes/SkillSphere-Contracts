@@ -7,4 +7,7 @@ pub enum VaultError {
     NotInitialized = 1,
     AlreadyInitialized = 2,
     NotAuthorized = 3,
+    BookingNotFound = 4,
+    BookingNotPending = 5,
+    InvalidAmount = 6,
 }
