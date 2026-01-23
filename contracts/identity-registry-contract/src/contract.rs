@@ -1,4 +1,3 @@
-use crate::types::ExpertStatus;
 use soroban_sdk::{Address, Env, Vec};
 use crate::storage;
 use crate::events;
