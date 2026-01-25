@@ -220,3 +220,57 @@ fn test_booking_not_found() {
     let result = client.try_finalize_session(&999, &50);
     assert!(result.is_err());
 }
+
+#[test]
+fn test_get_user_and_expert_bookings() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let admin = Address::generate(&env);
+    let user = Address::generate(&env);
+    let expert1 = Address::generate(&env);
+    let expert2 = Address::generate(&env);
+    let oracle = Address::generate(&env);
+
+    let token_admin = Address::generate(&env);
+    let token = create_token_contract(&env, &token_admin);
+    token.mint(&user, &100_000);
+
+    let client = create_client(&env);
+    client.init(&admin, &token.address, &oracle);
+
+    // Create 2 bookings for the same user with different experts
+    let rate = 10_i128;
+    let booked_duration = 100_u64;
+    let booking_id_1 = client.create_booking(&user, &expert1, &rate, &booked_duration);
+    let booking_id_2 = client.create_booking(&user, &expert2, &rate, &booked_duration);
+
+    // Test get_user_bookings - should return 2 bookings
+    let user_bookings = client.get_user_bookings(&user);
+    assert_eq!(user_bookings.len(), 2);
+    assert_eq!(user_bookings.get(0).unwrap(), booking_id_1);
+    assert_eq!(user_bookings.get(1).unwrap(), booking_id_2);
+
+    // Test get_expert_bookings - expert1 should have 1 booking
+    let expert1_bookings = client.get_expert_bookings(&expert1);
+    assert_eq!(expert1_bookings.len(), 1);
+    assert_eq!(expert1_bookings.get(0).unwrap(), booking_id_1);
+
+    // Test get_expert_bookings - expert2 should have 1 booking
+    let expert2_bookings = client.get_expert_bookings(&expert2);
+    assert_eq!(expert2_bookings.len(), 1);
+    assert_eq!(expert2_bookings.get(0).unwrap(), booking_id_2);
+
+    // Test get_booking - verify we can retrieve booking details
+    let booking_1 = client.get_booking(&booking_id_1);
+    assert!(booking_1.is_some());
+    let booking_1 = booking_1.unwrap();
+    assert_eq!(booking_1.id, booking_id_1);
+    assert_eq!(booking_1.user, user);
+    assert_eq!(booking_1.expert, expert1);
+    assert_eq!(booking_1.rate, rate);
+
+    // Test get_booking for non-existent booking
+    let non_existent = client.get_booking(&999);
+    assert!(non_existent.is_none());
+}
