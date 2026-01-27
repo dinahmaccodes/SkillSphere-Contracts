@@ -16,4 +16,6 @@ pub enum RegistryError {
     AlreadyVerified = 5,
     AlreadyBanned = 6,
     ExpertVecMax = 7,
+    NotVerified = 8,
+    UriTooLong = 9,
 }
