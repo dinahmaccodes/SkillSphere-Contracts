@@ -9,8 +9,6 @@ pub enum DataKey {
     Expert(Address),
 }
 
-// Constants for TTL (Time To Live)
-// Stellar ledgers close approx every 5 seconds.
 // 1 Year in seconds = 31,536,000
 // 1 Year in ledgers = ~6,307,200 (approx)
 //
