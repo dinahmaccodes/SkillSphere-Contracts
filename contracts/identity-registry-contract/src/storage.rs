@@ -1,5 +1,5 @@
 use crate::types::{ExpertRecord, ExpertStatus};
-use soroban_sdk::{contracttype, Address, Env};
+use soroban_sdk::{contracttype, Address, Env, String};
 
 // 1. Data Keys
 #[contracttype]
@@ -14,12 +14,12 @@ pub enum DataKey {
 // 1 Year in seconds = 31,536,000
 // 1 Year in ledgers = ~6,307,200 (approx)
 //
-// However, Soroban allows setting TTL logic relative to the current ledger.
+// Soroban allows setting TTL logic relative to the current ledger.
 // "Threshold": If remaining lifetime is less than this...
 // "Extend": ...bump it up to this amount.
 
-const LEDGERS_THRESHOLD: u32 = 1_000_000; // ~2 months
-const LEDGERS_EXTEND_TO: u32 = 6_300_000; // ~1 year
+const LEDGERS_THRESHOLD: u32 = 1_000_000; // 2 months
+const LEDGERS_EXTEND_TO: u32 = 6_300_000; // 1 year
 
 // ... [Admin Helpers] ...
 
@@ -40,13 +40,14 @@ pub fn get_admin(env: &Env) -> Option<Address> {
 
 // ... [Expert Helpers] ...
 
-/// Set the expert record with status and timestamp
-pub fn set_expert_record(env: &Env, expert: &Address, status: ExpertStatus) {
+/// Set the expert record with status, data_uri and timestamp
+pub fn set_expert_record(env: &Env, expert: &Address, status: ExpertStatus, data_uri: String) {
     let key = DataKey::Expert(expert.clone());
 
     let record = ExpertRecord {
         status,
         updated_at: env.ledger().timestamp(),
+        data_uri,
     };
 
     // 1. Save the data
@@ -78,6 +79,7 @@ pub fn get_expert_record(env: &Env, expert: &Address) -> ExpertRecord {
         .unwrap_or(ExpertRecord {
             status: ExpertStatus::Unverified,
             updated_at: 0,
+            data_uri: String::from_str(env, ""),
         })
 }
 
