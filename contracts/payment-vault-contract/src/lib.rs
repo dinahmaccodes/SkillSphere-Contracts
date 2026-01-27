@@ -49,6 +49,16 @@ impl PaymentVaultContract {
         contract::finalize_session(&env, booking_id, actual_duration)
     }
 
+    /// Reclaim funds from a stale booking (User-only)
+    /// Users can reclaim their deposit if the booking has been pending for more than 24 hours
+    pub fn reclaim_stale_session(
+        env: Env,
+        user: Address,
+        booking_id: u64,
+    ) -> Result<(), VaultError> {
+        contract::reclaim_stale_session(&env, &user, booking_id)
+    }
+
     /// Get all booking IDs for a specific user
     pub fn get_user_bookings(env: Env, user: Address) -> Vec<u64> {
         storage::get_user_bookings(&env, &user)

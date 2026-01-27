@@ -7,6 +7,7 @@ use soroban_sdk::{contracttype, Address};
 pub enum BookingStatus {
     Pending = 0,
     Complete = 1,
+    Reclaimed = 2,
 }
 
 /// Record of a consultation booking with deposit locked
@@ -20,4 +21,5 @@ pub struct BookingRecord {
     pub max_duration: u64,          // Maximum booked duration in seconds
     pub total_deposit: i128,        // Total deposit (rate_per_second * max_duration)
     pub status: BookingStatus,      // Current booking status
+    pub created_at: u64,            // Ledger timestamp when booking was created
 }
